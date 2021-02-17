@@ -25,6 +25,6 @@ export const Billing = {
             return BillingError.InvalidStatus();
         }
 
-        return {status: "CheckPerformTransaction live"};
+        return {allow : true};
     },
 };

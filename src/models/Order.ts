@@ -1,4 +1,4 @@
-const Orders = [{id: 1, user_id: 2, products_id: [], status: 2, amount: 2}];
+const Orders = [{id: 1, user_id: 2, products_id: [], status: 1, amount: 2}];
 
 export class Order {
 
