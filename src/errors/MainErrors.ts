@@ -1,9 +1,10 @@
 import {ResponseErrorRPC} from "../interfaces/ResponseErrorRPC";
+import {ErrorCodes} from "../enums/ErrorCodes";
 
-export  const MainError = {
-    TransportError: () : ResponseErrorRPC => {
+export class MainError {
+    TransportError() : ResponseErrorRPC {
         return {
-            code : -32300,
+            code : ErrorCodes.TransportError,
             message : {
                 ru: "Метод запроса не POST.",
                 uz: "So'rov usuli POST emas.",
@@ -11,11 +12,11 @@ export  const MainError = {
             },
             data : null
         }
-    },
+    };
 
-    AccessDenied: () => {
+    AccessDenied(): ResponseErrorRPC {
         return {
-            code : -32504,
+            code : ErrorCodes.AccessDenied,
             message : {
                 ru: "Недостаточно привилегий для выполнения метода.",
                 uz: "Usulni bajarish uchun etarli imtiyozlar mavjud emas.",
@@ -23,11 +24,11 @@ export  const MainError = {
             },
             data : null
         }
-    },
+    };
 
-    ParseError: () => {
+    ParseError() : ResponseErrorRPC {
         return {
-            code : -32700,
+            code : ErrorCodes.ParseError,
             message : {
                 ru: "Ошибка парсинга JSON.",
                 uz: "JSONni tahlil qilishda xato.",
@@ -35,11 +36,11 @@ export  const MainError = {
             },
             data : null
         }
-    },
+    };
 
-    MethodNotFound: () => {
+    MethodNotFound(): ResponseErrorRPC {
         return {
-            code : -32601,
+            code : ErrorCodes.MethodNotFound,
             message : {
                 ru: "Запрашиваемый метод не найден.",
                 uz: "So'ralgan usul topilmadi.",
