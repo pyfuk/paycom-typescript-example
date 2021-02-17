@@ -8,7 +8,15 @@ import {router} from "./router";
 
 const app = express();
 
-app.use(json());
+
+app.use((req, res, next) => {
+    json()(req, res, err => {
+        if (err && err.type === 'entity.parse.failed') {
+            res.send(prepareResponse(req.body.id, MainError.ParseError(), null));
+        }
+        next();
+    });
+});
 
 
 app.all('/', (req: Request, res: Response) => {
@@ -19,25 +27,16 @@ app.all('/', (req: Request, res: Response) => {
 
     const method = router.find(r => r.method === req.body.method)
 
-    if(!method){
+    if (!method) {
         res.send(prepareResponse(req.body.id, MainError.MethodNotFound(), null))
-    }
+    } else {
+        const result = method.handler(req.body);
 
-    const result = method.handler(req);
-
-    res.send(prepareResponse(req.body.id, null, result));
-
-});
-
-
-app.use(function (err, req, res, next) {
-    if (err.type === 'entity.parse.failed') {
-        res.send(prepareResponse(req.body.id, MainError.ParseError(), null));
+        res.send(prepareResponse(req.body.id, null, result));
     }
 });
 
-
-app.listen(8888, () => console.log("Server started on port 8888"));
+app.listen(8880, () => console.log("Server started on port 8880"));
 
 
 const prepareResponse = (id: number, error?: ResponseErrorRPC, result?: any) => {
