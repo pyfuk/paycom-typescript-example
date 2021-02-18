@@ -10,6 +10,7 @@ import {TransactionState} from "./enums/TransactionState";
 import {PerformTransactionParams} from "./interfaces/PerformTransactionParams";
 import {TransactionReason} from "./enums/TransactionReason";
 import {CancelTransaction} from "./interfaces/CancelTransaction";
+import {CheckTransactionParams} from "./interfaces/CheckTransactionParams";
 
 
 const TimeOutTime = 43200000;
@@ -150,5 +151,25 @@ export const Billing = {
             cancel_time: transaction.cancel_time,
             state: transaction.state
         }
+    },
+
+    CheckTransaction: (body: RequestBodyRPC<CheckTransactionParams>) => {
+
+        const transaction = new Transaction();
+        transaction.find(body.params.id);
+
+        if (!transaction.id) {
+            return new BillingError().TransactionNotFound();
+        }
+
+        return {
+            create_time: transaction.create_time,
+            perform_time: transaction.perform_time,
+            cancel_time: transaction.create_time,
+            transaction: transaction.transaction,
+            state: transaction.state,
+            reason: transaction.reason
+        }
+
     }
 };
