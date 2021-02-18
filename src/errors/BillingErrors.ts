@@ -61,4 +61,16 @@ export class BillingError {
             data: "transaction"
         }
     }
+
+    CanNotCancelTransaction(): ResponseErrorRPC {
+        return {
+            code: ErrorCodes.TransactionNotFound,
+            message: {
+                ru: "Невозможно отменить транзакцию.",
+                uz: "Tranzaksiya bekor qilinmadi.",
+                en: "Unable to cancel transaction"
+            },
+            data: "transaction"
+        }
+    }
 }

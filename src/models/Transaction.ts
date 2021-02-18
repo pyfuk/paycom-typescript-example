@@ -60,8 +60,10 @@ export class Transaction {
         return this;
     }
 
-    cancelByTimeOut(){
-        this.state = TransactionState.canceled;
-        this.reason = TransactionReason.transactionTimeOut;
+    cancel(state: TransactionState, reason: TransactionReason){
+        this.state = state;
+        this.reason = reason;
+        this.cancel_time = new Date().getTime();
     }
+
 }

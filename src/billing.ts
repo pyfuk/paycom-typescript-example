@@ -8,6 +8,8 @@ import {CreateTransactionParams} from "./interfaces/CreateTransactionParams";
 import {CheckPerformTransactionParams} from "./interfaces/CheckPerformTransactionParams";
 import {TransactionState} from "./enums/TransactionState";
 import {PerformTransactionParams} from "./interfaces/PerformTransactionParams";
+import {TransactionReason} from "./enums/TransactionReason";
+import {CancelTransaction} from "./interfaces/CancelTransaction";
 
 
 const TimeOutTime = 43200000;
@@ -62,7 +64,7 @@ export const Billing = {
         }
 
         if(new Date().getTime() > (transaction.time + TimeOutTime)){
-            transaction.cancelByTimeOut();
+            transaction.cancel(TransactionState.canceled, TransactionReason.transactionTimeOut);
             return new BillingError().UnableToPerform();
         }
 
@@ -95,7 +97,7 @@ export const Billing = {
         }
 
         if(new Date().getTime() > (transaction.time + TimeOutTime)){
-            transaction.cancelByTimeOut();
+            transaction.cancel(TransactionState.canceled, TransactionReason.transactionTimeOut);
             return new BillingError().UnableToPerform();
         }
 
@@ -105,6 +107,47 @@ export const Billing = {
         return {
             transaction: transaction.transaction,
             perform_time: transaction.perform_time,
+            state: transaction.state
+        }
+    },
+    CancelTransaction: (body: RequestBodyRPC<CancelTransaction>) => {
+        const transaction = new Transaction();
+        transaction.find(body.params.id);
+
+        if (!transaction.id) {
+            return new BillingError().TransactionNotFound();
+        }
+
+        if(transaction.state === TransactionState.waiting){
+            transaction.cancel(TransactionState.canceled, body.params.reason);
+            return {
+                transaction: transaction.transaction,
+                cancel_time: transaction.cancel_time,
+                state: transaction.state
+            }
+        }
+
+        if(transaction.state !== TransactionState.payed){
+            return {
+                transaction: transaction.transaction,
+                cancel_time: transaction.cancel_time,
+                state: transaction.state
+            }
+        }
+
+        const order = Orders.find(order => order.id == transaction.order_id);
+
+        if(order.status === OrderStatus.delivered){
+            return new BillingError().CanNotCancelTransaction();
+        }
+
+        order.status = OrderStatus.canceled;
+
+        transaction.cancel(TransactionState.canceled_after_paid ,body.params.reason);
+
+        return {
+            transaction: transaction.transaction,
+            cancel_time: transaction.cancel_time,
             state: transaction.state
         }
     }

@@ -8,4 +8,5 @@ export enum ErrorCodes {
     InvalidStatus = -31050,
     UnableToPerform = -31008,
     TransactionNotFound = -31003,
+    CanNotCancelTransaction = -31007
 }
