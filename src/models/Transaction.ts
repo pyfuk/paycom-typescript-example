@@ -1,19 +1,19 @@
 import {TransactionState} from "../enums/TransactionState";
-import {Orders, Transactions} from "../mocks/Database";
+import {Transactions} from "../mocks/Database";
 import {CreateTransactionParams} from "../interfaces/CreateTransactionParams";
-import {Order} from "./Order";
+import {TransactionReason} from "../enums/TransactionReason";
 
 
 export class Transaction {
     id: number;
-    time: Date;
-    create_time: Date;
-    perform_time: Date;
-    cancel_time: Date;
+    time: number;
+    create_time: number;
+    perform_time: number;
+    cancel_time: number;
     transaction: number;
     order_id: number;
     state: TransactionState;
-    reason: string;
+    reason: TransactionReason;
     receivers: [];
 
 
@@ -24,12 +24,12 @@ export class Transaction {
 
         this.id = params.id,
             this.time = params.time,
-            this.create_time = new Date(),
-            this.perform_time = new Date(0),
-            this.cancel_time = new Date(0),
+            this.create_time = new Date().getTime(),
+            this.perform_time = new Date(0).getTime(),
+            this.cancel_time = new Date(0).getTime(),
             this.transaction = transactionId,
             this.order_id = order.id,
-            this.state = TransactionState.created,
+            this.state = TransactionState.waiting,
             this.reason = null,
             this.receivers = []
 
@@ -58,5 +58,10 @@ export class Transaction {
         this.receivers = transaction.receivers;
 
         return this;
+    }
+
+    cancelByTimeOut(){
+        this.state = TransactionState.canceled;
+        this.reason = TransactionReason.transactionTimeOut;
     }
 }

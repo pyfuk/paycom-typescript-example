@@ -6,6 +6,10 @@ import {Transaction} from "./models/Transaction";
 import {Orders} from "./mocks/Database";
 import {CreateTransactionParams} from "./interfaces/CreateTransactionParams";
 import {CheckPerformTransactionParams} from "./interfaces/CheckPerformTransactionParams";
+import {TransactionState} from "./enums/TransactionState";
+
+
+const TimeOutTime = 43200000;
 
 export const Billing = {
     CheckPerformTransaction: (body: RequestBodyRPC<CheckPerformTransactionParams>) => {
@@ -36,6 +40,7 @@ export const Billing = {
         const transaction = new Transaction();
         transaction.find(body.params.id);
 
+
         if (!transaction.id) {
             const result = Billing.CheckPerformTransaction(body);
             if ("code" in result) {
@@ -44,8 +49,28 @@ export const Billing = {
             const order = Orders.find(order => order.id == body.params.account.order_id);
             transaction.create(body.params, order);
 
-            console.log(transaction)
+            return {
+                create_time: transaction.create_time,
+                transaction: transaction.transaction,
+                state: transaction.state
+            }
         }
 
+        if(transaction.state !== TransactionState.waiting){
+            return new BillingError().UnableToPerform();
+        }
+
+        if(new Date().getTime() > (transaction.time + TimeOutTime)){
+            transaction.cancelByTimeOut();
+            return new BillingError().UnableToPerform();
+        }
+
+        console.log(new Date().getTime() - TimeOutTime)
+
+        return {
+            create_time: transaction.create_time,
+            transaction: transaction.transaction,
+            state: transaction.state
+        }
     }
 };

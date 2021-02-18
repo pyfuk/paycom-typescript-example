@@ -35,5 +35,17 @@ export class BillingError {
             },
             data: "order"
         }
+    };
+
+    UnableToPerform(): ResponseErrorRPC {
+        return {
+            code: -31008,
+            message: {
+                ru: "Невозможно выполнить операцию",
+                uz: "Amalni amalga oshirib bo'lmadi.",
+                en: "Unable to perform operation."
+            },
+            data: "transaction"
+        }
     }
 }
