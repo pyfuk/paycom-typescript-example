@@ -1,9 +1,10 @@
 import {ResponseErrorRPC} from "../interfaces/ResponseErrorRPC";
+import {ErrorCodes} from "../enums/ErrorCodes";
 
 export class BillingError {
     OrderNotFound(): ResponseErrorRPC {
         return {
-            code: -31050,
+            code: ErrorCodes.OrderNotFound,
             message: {
                 ru: "Заказ не найден.",
                 uz: "Buyurtma topilmadi.",
@@ -15,7 +16,7 @@ export class BillingError {
 
     IncorrectAmount(): ResponseErrorRPC {
         return {
-            code: -31001,
+            code: ErrorCodes.IncorrectAmount,
             message: {
                 ru: "Неверная сумма заказа.",
                 uz: "Buyurtma miqdori yaroqsiz.",
@@ -27,7 +28,7 @@ export class BillingError {
 
     InvalidStatus(): ResponseErrorRPC {
         return {
-            code: -31050,
+            code: ErrorCodes.InvalidStatus,
             message: {
                 ru: "Неверный статус заказа.",
                 uz: "Buyurtma holati noto‘g‘ri.",
@@ -39,7 +40,7 @@ export class BillingError {
 
     UnableToPerform(): ResponseErrorRPC {
         return {
-            code: -31008,
+            code: ErrorCodes.UnableToPerform,
             message: {
                 ru: "Невозможно выполнить операцию",
                 uz: "Amalni amalga oshirib bo'lmadi.",
