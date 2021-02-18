@@ -5,5 +5,7 @@ export const router: Router[] = [
 
     {method: "CheckPerformTransaction", handler: Billing.CheckPerformTransaction},
     {method: "CreateTransaction", handler: Billing.CreateTransaction},
+    {method: "PerformTransaction", handler: Billing.PerformTransaction},
+
 
 ]

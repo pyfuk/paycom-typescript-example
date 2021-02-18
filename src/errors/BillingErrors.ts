@@ -42,9 +42,21 @@ export class BillingError {
         return {
             code: ErrorCodes.UnableToPerform,
             message: {
-                ru: "Невозможно выполнить операцию",
+                ru: "Невозможно выполнить операцию.",
                 uz: "Amalni amalga oshirib bo'lmadi.",
                 en: "Unable to perform operation."
+            },
+            data: "transaction"
+        }
+    };
+
+    TransactionNotFound(): ResponseErrorRPC {
+        return {
+            code: ErrorCodes.TransactionNotFound,
+            message: {
+                ru: "Транзакция не найдена.",
+                uz: "Tranzaksiya topilmadi.",
+                en: "Transaction not found."
             },
             data: "transaction"
         }

@@ -6,5 +6,6 @@ export enum ErrorCodes {
     OrderNotFound = -31050,
     IncorrectAmount = -31001,
     InvalidStatus = -31050,
-    UnableToPerform = -31008
+    UnableToPerform = -31008,
+    TransactionNotFound = -31003,
 }
