@@ -3,7 +3,7 @@ import {RequestBodyRPC} from "./interfaces/RequestBodyRPC";
 import {BillingError} from "./errors/BillingErrors";
 import {OrderStatus} from "./enums/OrderStatus";
 import {Transaction} from "./models/Transaction";
-import {Orders} from "./mocks/Database";
+import {Orders, Transactions} from "./mocks/Database";
 import {CreateTransactionParams} from "./interfaces/CreateTransactionParams";
 import {CheckPerformTransactionParams} from "./interfaces/CheckPerformTransactionParams";
 import {TransactionState} from "./enums/TransactionState";
@@ -11,6 +11,7 @@ import {PerformTransactionParams} from "./interfaces/PerformTransactionParams";
 import {TransactionReason} from "./enums/TransactionReason";
 import {CancelTransaction} from "./interfaces/CancelTransaction";
 import {CheckTransactionParams} from "./interfaces/CheckTransactionParams";
+import {GetStatementParams} from "./interfaces/GetStatementParams";
 
 
 const TimeOutTime = 43200000;
@@ -60,11 +61,11 @@ export const Billing = {
             }
         }
 
-        if(transaction.state !== TransactionState.waiting){
+        if (transaction.state !== TransactionState.waiting) {
             return new BillingError().UnableToPerform();
         }
 
-        if(new Date().getTime() > (transaction.time + TimeOutTime)){
+        if (new Date().getTime() > (transaction.time + TimeOutTime)) {
             transaction.cancel(TransactionState.canceled, TransactionReason.transactionTimeOut);
             return new BillingError().UnableToPerform();
         }
@@ -84,10 +85,10 @@ export const Billing = {
             return new BillingError().TransactionNotFound();
         }
 
-        if(transaction.state !== TransactionState.waiting){
+        if (transaction.state !== TransactionState.waiting) {
 
-            if(transaction.state !== TransactionState.payed){
-                return  new BillingError().UnableToPerform();
+            if (transaction.state !== TransactionState.payed) {
+                return new BillingError().UnableToPerform();
             }
 
             return {
@@ -97,7 +98,7 @@ export const Billing = {
             }
         }
 
-        if(new Date().getTime() > (transaction.time + TimeOutTime)){
+        if (new Date().getTime() > (transaction.time + TimeOutTime)) {
             transaction.cancel(TransactionState.canceled, TransactionReason.transactionTimeOut);
             return new BillingError().UnableToPerform();
         }
@@ -119,7 +120,7 @@ export const Billing = {
             return new BillingError().TransactionNotFound();
         }
 
-        if(transaction.state === TransactionState.waiting){
+        if (transaction.state === TransactionState.waiting) {
             transaction.cancel(TransactionState.canceled, body.params.reason);
             return {
                 transaction: transaction.transaction,
@@ -128,7 +129,7 @@ export const Billing = {
             }
         }
 
-        if(transaction.state !== TransactionState.payed){
+        if (transaction.state !== TransactionState.payed) {
             return {
                 transaction: transaction.transaction,
                 cancel_time: transaction.cancel_time,
@@ -138,13 +139,13 @@ export const Billing = {
 
         const order = Orders.find(order => order.id == transaction.order_id);
 
-        if(order.status === OrderStatus.delivered){
+        if (order.status === OrderStatus.delivered) {
             return new BillingError().CanNotCancelTransaction();
         }
 
         order.status = OrderStatus.canceled;
 
-        transaction.cancel(TransactionState.canceled_after_paid ,body.params.reason);
+        transaction.cancel(TransactionState.canceled_after_paid, body.params.reason);
 
         return {
             transaction: transaction.transaction,
@@ -171,5 +172,21 @@ export const Billing = {
             reason: transaction.reason
         }
 
+    },
+
+    GetStatement: (body: RequestBodyRPC<GetStatementParams>) => {
+
+        const transactions = Transactions.map((transaction: Transaction) => {
+                if (transaction.state >= TransactionState.waiting &&
+                    transaction.time >= body.params.from &&
+                    transaction.time <= body.params.to) {
+                    return transaction
+                }
+            }
+        );
+
+        return {
+            transactions: transactions
+        }
     }
 };
