@@ -1,7 +1,6 @@
 export enum TransactionState {
-    created,
-    waiting,
+    waiting = 1,
     payed,
-    canceled_after_paid =-2,
+    canceled_after_payed = -2,
     canceled
 }

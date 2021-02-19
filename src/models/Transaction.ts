@@ -1,51 +1,26 @@
 import {TransactionState} from "../enums/TransactionState";
 import {Transactions} from "../mocks/Database";
-import {CreateTransactionParams} from "../interfaces/CreateTransactionParams";
 import {TransactionReason} from "../enums/TransactionReason";
+import {ITransaction} from "../interfaces/ITransaction";
 
-
-export class Transaction {
+export class Transaction implements ITransaction {
     id: number;
     time: number;
+    state: TransactionState;
+    reason: TransactionReason;
     create_time: number;
     perform_time: number;
     cancel_time: number;
     transaction: number;
-    order_id: number;
-    state: TransactionState;
-    reason: TransactionReason;
+    order_id: number
     receivers: [];
 
-
-    //ORDER Исправить!!!!!!!!!                   тут
-
-    create(params: CreateTransactionParams, order: { id: number }) {
-        const transactionId = Transactions.length;
-
-        this.id = params.id,
-            this.time = params.time,
-            this.create_time = new Date().getTime(),
-            this.perform_time = new Date(0).getTime(),
-            this.cancel_time = new Date(0).getTime(),
-            this.transaction = transactionId,
-            this.order_id = order.id,
-            this.state = TransactionState.waiting,
-            this.reason = null,
-            this.receivers = []
-
-
-        Transactions.push(this);
-
-        return this;
-    }
-
-    find(id: number) {
-        const transaction = Transactions.find(transaction => transaction.id === id);
+    async find(params) {
+        const transaction = Transactions.find(transaction => transaction.id === params.id);
 
         if (!transaction) {
             return null;
         }
-
         this.id = transaction.id;
         this.time = transaction.time;
         this.create_time = transaction.create_time;
@@ -60,10 +35,60 @@ export class Transaction {
         return this;
     }
 
-    cancel(state: TransactionState, reason: TransactionReason){
-        this.state = state;
-        this.reason = reason;
-        this.cancel_time = new Date().getTime();
+    async create(params) {
+        const transactionId = Transactions.length;
+
+        this.id = params.id,
+            this.time = params.time,
+            this.create_time = Date.now(),
+            this.perform_time = 0,
+            this.cancel_time = 0,
+            this.transaction = transactionId,
+            this.order_id = params.account.order_id,
+            this.state = TransactionState.waiting,
+            this.reason = null,
+            this.receivers = []
+
+        Transactions.push(this);
+
+        return this;
     }
 
+    async cancel(state: TransactionState, reason: TransactionReason) {
+        this.state = state;
+        this.reason = reason;
+        this.cancel_time = Date.now();
+    }
+
+    async getTransactions(params) {
+
+        return Transactions.map((transaction: Transaction) => {
+                if (transaction.state >= TransactionState.waiting &&
+                    transaction.time >= params.from &&
+                    transaction.time <= params.to) {
+                    return transaction
+                }
+            }
+        )
+    }
+
+    getCreateTime(): number {
+        return this.create_time;
+    }
+
+    getPerformTime(): number {
+        return this.perform_time;
+    }
+
+    setPerformTime(time: number) {
+        this.perform_time = time;
+    }
+
+    getCancelTime() {
+        return this.cancel_time;
+    }
+
+    getId(): number {
+        return this.transaction;
+    }
 }

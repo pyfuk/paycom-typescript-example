@@ -1,9 +1,5 @@
-import {Order} from "./models/Order";
 import {RequestBodyRPC} from "./interfaces/RequestBodyRPC";
 import {BillingError} from "./errors/BillingErrors";
-import {OrderStatus} from "./enums/OrderStatus";
-import {Transaction} from "./models/Transaction";
-import {Orders, Transactions} from "./mocks/Database";
 import {CreateTransactionParams} from "./interfaces/CreateTransactionParams";
 import {CheckPerformTransactionParams} from "./interfaces/CheckPerformTransactionParams";
 import {TransactionState} from "./enums/TransactionState";
@@ -12,181 +8,160 @@ import {TransactionReason} from "./enums/TransactionReason";
 import {CancelTransaction} from "./interfaces/CancelTransaction";
 import {CheckTransactionParams} from "./interfaces/CheckTransactionParams";
 import {GetStatementParams} from "./interfaces/GetStatementParams";
+import {IAccount} from "./interfaces/IAccount";
+import {ITransaction} from "./interfaces/ITransaction";
 
 
 const TimeOutTime = 43200000;
 
-export const Billing = {
-    CheckPerformTransaction: (body: RequestBodyRPC<CheckPerformTransactionParams>) => {
+export abstract class Billing {
 
-        let order = new Order();
-        order.find(body.params.account.order_id);
+    abstract createAccount(): IAccount;
 
-        if (!order.id) {
-            return new BillingError().OrderNotFound();
-        }
+    async CheckPerformTransaction(body: RequestBodyRPC<CheckPerformTransactionParams>) {
 
-        if (order.amount != body.params.amount) {
-            return new BillingError().IncorrectAmount();
-        }
-
-        if (order.amount != body.params.amount) {
-            return new BillingError().IncorrectAmount();
-        }
-
-        if (order.status !== OrderStatus.waiting) {
-            return new BillingError().InvalidStatus();
-        }
+        const account = this.createAccount();
+        await account.find(body.params);
+        await account.validate(body.params);
 
         return {allow: true};
-    },
-    CreateTransaction: (body: RequestBodyRPC<CreateTransactionParams>) => {
+    };
 
-        const transaction = new Transaction();
-        transaction.find(body.params.id);
+    async CreateTransaction(body: RequestBodyRPC<CreateTransactionParams>, transaction: ITransaction) {
 
+        await transaction.find(body.params);
 
         if (!transaction.id) {
-            const result = Billing.CheckPerformTransaction(body);
-            if ("code" in result) {
-                return result;
-            }
-            const order = Orders.find(order => order.id == body.params.account.order_id);
-            transaction.create(body.params, order);
+            await this.CheckPerformTransaction(body)
+            await transaction.create(body.params);
 
             return {
-                create_time: transaction.create_time,
-                transaction: transaction.transaction,
+                create_time: transaction.getCreateTime(),
+                transaction: transaction.getId(),
                 state: transaction.state
             }
         }
 
         if (transaction.state !== TransactionState.waiting) {
-            return new BillingError().UnableToPerform();
+            throw new BillingError().UnableToPerform();
         }
 
-        if (new Date().getTime() > (transaction.time + TimeOutTime)) {
-            transaction.cancel(TransactionState.canceled, TransactionReason.transactionTimeOut);
-            return new BillingError().UnableToPerform();
+        if (this.isExpired(transaction.time)) {
+            await transaction.cancel(TransactionState.canceled, TransactionReason.transactionTimeOut);
+            throw new BillingError().UnableToPerform();
         }
 
         return {
-            create_time: transaction.create_time,
-            transaction: transaction.transaction,
+            create_time: transaction.getCreateTime(),
+            transaction: transaction.getId(),
             state: transaction.state
         }
-    },
-    PerformTransaction: (body: RequestBodyRPC<PerformTransactionParams>) => {
+    };
 
-        const transaction = new Transaction();
-        transaction.find(body.params.id);
+    async PerformTransaction(body: RequestBodyRPC<PerformTransactionParams>, transaction: ITransaction) {
+
+        await transaction.find(body.params);
 
         if (!transaction.id) {
-            return new BillingError().TransactionNotFound();
+            throw new BillingError().TransactionNotFound();
         }
 
         if (transaction.state !== TransactionState.waiting) {
 
             if (transaction.state !== TransactionState.payed) {
-                return new BillingError().UnableToPerform();
+                throw new BillingError().UnableToPerform();
             }
 
             return {
-                transaction: transaction.transaction,
-                perform_time: transaction.perform_time,
+                transaction: transaction.getId(),
+                perform_time: transaction.getPerformTime(),
                 state: transaction.state
             }
         }
 
-        if (new Date().getTime() > (transaction.time + TimeOutTime)) {
-            transaction.cancel(TransactionState.canceled, TransactionReason.transactionTimeOut);
-            return new BillingError().UnableToPerform();
+        if (this.isExpired(transaction.time)) {
+            await transaction.cancel(TransactionState.canceled, TransactionReason.transactionTimeOut);
+            throw new BillingError().UnableToPerform();
         }
 
         transaction.state = TransactionState.payed;
-        transaction.perform_time = new Date().getTime();
+        transaction.setPerformTime(Date.now());
 
         return {
-            transaction: transaction.transaction,
-            perform_time: transaction.perform_time,
+            transaction: transaction.getId(),
+            perform_time: transaction.getPerformTime(),
             state: transaction.state
         }
-    },
-    CancelTransaction: (body: RequestBodyRPC<CancelTransaction>) => {
-        const transaction = new Transaction();
-        transaction.find(body.params.id);
+    }
+
+    async CancelTransaction(body: RequestBodyRPC<CancelTransaction>, transaction: ITransaction) {
+
+        await transaction.find(body.params);
 
         if (!transaction.id) {
-            return new BillingError().TransactionNotFound();
+            throw new BillingError().TransactionNotFound();
         }
 
         if (transaction.state === TransactionState.waiting) {
-            transaction.cancel(TransactionState.canceled, body.params.reason);
+            await transaction.cancel(TransactionState.canceled, body.params.reason);
             return {
-                transaction: transaction.transaction,
-                cancel_time: transaction.cancel_time,
+                transaction: transaction.getId(),
+                cancel_time: transaction.getCancelTime(),
                 state: transaction.state
             }
         }
 
         if (transaction.state !== TransactionState.payed) {
             return {
-                transaction: transaction.transaction,
-                cancel_time: transaction.cancel_time,
+                transaction: transaction.getId(),
+                cancel_time: transaction.getCancelTime(),
                 state: transaction.state
             }
         }
 
-        const order = Orders.find(order => order.id == transaction.order_id);
+        const account = this.createAccount();
 
-        if (order.status === OrderStatus.delivered) {
-            return new BillingError().CanNotCancelTransaction();
+        if (!await account.allowCancelPaidOrder(body.params)) {
+            throw new BillingError().CanNotCancelTransaction();
         }
 
-        order.status = OrderStatus.canceled;
+        await account.cancel(body.params);
 
-        transaction.cancel(TransactionState.canceled_after_paid, body.params.reason);
+        await transaction.cancel(TransactionState.canceled_after_payed, body.params.reason);
 
         return {
-            transaction: transaction.transaction,
-            cancel_time: transaction.cancel_time,
+            transaction: transaction.getId(),
+            cancel_time: transaction.getCancelTime(),
             state: transaction.state
         }
-    },
+    };
 
-    CheckTransaction: (body: RequestBodyRPC<CheckTransactionParams>) => {
+    async CheckTransaction(body: RequestBodyRPC<CheckTransactionParams>, transaction: ITransaction) {
 
-        const transaction = new Transaction();
-        transaction.find(body.params.id);
+        await transaction.find(body.params);
 
         if (!transaction.id) {
-            return new BillingError().TransactionNotFound();
+            throw new BillingError().TransactionNotFound();
         }
 
         return {
-            create_time: transaction.create_time,
-            perform_time: transaction.perform_time,
-            cancel_time: transaction.create_time,
-            transaction: transaction.transaction,
+            create_time: transaction.getCreateTime(),
+            perform_time: transaction.getPerformTime(),
+            cancel_time: transaction.getCancelTime(),
+            transaction: transaction.getId(),
             state: transaction.state,
             reason: transaction.reason
         }
 
-    },
+    };
 
-    GetStatement: (body: RequestBodyRPC<GetStatementParams>) => {
-
-        const transactions = Transactions.map((transaction: Transaction) => {
-                if (transaction.state >= TransactionState.waiting &&
-                    transaction.time >= body.params.from &&
-                    transaction.time <= body.params.to) {
-                    return transaction
-                }
-            }
-        );
-
+    async GetStatement(body: RequestBodyRPC<GetStatementParams>, transaction: ITransaction) {
         return {
-            transactions: transactions
+            transactions: await transaction.getTransactions(body.params)
         }
     }
-};
+
+    private isExpired(time: number) {
+        return Date.now() > (time + TimeOutTime)
+    }
+}
