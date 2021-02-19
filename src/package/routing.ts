@@ -1,9 +1,9 @@
 import {prepareResponse} from "./utils/prepareResponse";
 import {MainError} from "./errors/MainErrors";
-import {RequestBodyRPC} from "./interfaces/RequestBodyRPC";
-import {CancelTransaction} from "./interfaces/CancelTransaction";
+import {RequestBodyRPC} from "./types/interfaces/RequestBodyRPC";
+import {CancelTransaction} from "./types/interfaces/CancelTransaction";
 import {Billing} from "./billing";
-import {ITransaction} from "./interfaces/ITransaction";
+import {ITransaction} from "./types/interfaces/ITransaction";
 
 
 export const routing = async (body: RequestBodyRPC<any>,accountCreator: Billing, transaction: ITransaction) => {

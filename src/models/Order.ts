@@ -1,7 +1,7 @@
-import { BillingError } from "../errors/BillingErrors";
-import { IAccount } from "../interfaces/IAccount";
+import { BillingError } from "../package/errors/BillingErrors";
+import { IAccount } from "../package/types/interfaces/IAccount";
 import { Orders } from "../mocks/Database";
-import {OrderStatus} from "../enums/OrderStatus";
+import {OrderStatus} from "../package/types/enums/OrderStatus";
 
 export class Order implements IAccount {
 

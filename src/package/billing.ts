@@ -1,15 +1,15 @@
-import {RequestBodyRPC} from "./interfaces/RequestBodyRPC";
+import {RequestBodyRPC} from "./types/interfaces/RequestBodyRPC";
 import {BillingError} from "./errors/BillingErrors";
-import {CreateTransactionParams} from "./interfaces/CreateTransactionParams";
-import {CheckPerformTransactionParams} from "./interfaces/CheckPerformTransactionParams";
-import {TransactionState} from "./enums/TransactionState";
-import {PerformTransactionParams} from "./interfaces/PerformTransactionParams";
-import {TransactionReason} from "./enums/TransactionReason";
-import {CancelTransaction} from "./interfaces/CancelTransaction";
-import {CheckTransactionParams} from "./interfaces/CheckTransactionParams";
-import {GetStatementParams} from "./interfaces/GetStatementParams";
-import {IAccount} from "./interfaces/IAccount";
-import {ITransaction} from "./interfaces/ITransaction";
+import {CreateTransactionParams} from "./types/interfaces/CreateTransactionParams";
+import {CheckPerformTransactionParams} from "./types/interfaces/CheckPerformTransactionParams";
+import {TransactionState} from "./types/enums/TransactionState";
+import {PerformTransactionParams} from "./types/interfaces/PerformTransactionParams";
+import {TransactionReason} from "./types/enums/TransactionReason";
+import {CancelTransaction} from "./types/interfaces/CancelTransaction";
+import {CheckTransactionParams} from "./types/interfaces/CheckTransactionParams";
+import {GetStatementParams} from "./types/interfaces/GetStatementParams";
+import {IAccount} from "./types/interfaces/IAccount";
+import {ITransaction} from "./types/interfaces/ITransaction";
 
 
 const TimeOutTime = 43200000;

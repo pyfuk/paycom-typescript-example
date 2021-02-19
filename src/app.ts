@@ -1,9 +1,9 @@
 import {json} from "body-parser";
 import express from "express";
 import {Request, Response} from "express";
-import {MainError} from "./errors/MainErrors";
-import {prepareResponse} from "./utils/prepareResponse";
-import {routing} from "./routing";
+import {MainError} from "./package/errors/MainErrors";
+import {prepareResponse} from "./package/utils/prepareResponse";
+import {routing} from "./package/routing";
 import {OrderCreator} from "./OrderCreator";
 import {Transaction} from "./models/Transaction";
 

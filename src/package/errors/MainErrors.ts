@@ -1,5 +1,5 @@
-import {ResponseErrorRPC} from "../interfaces/ResponseErrorRPC";
-import {ErrorCodes} from "../enums/ErrorCodes";
+import {ResponseErrorRPC} from "../types/interfaces/ResponseErrorRPC";
+import {ErrorCodes} from "../types/enums/ErrorCodes";
 
 export class MainError {
     TransportError() : ResponseErrorRPC {

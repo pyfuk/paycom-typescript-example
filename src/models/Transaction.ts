@@ -1,7 +1,7 @@
-import {TransactionState} from "../enums/TransactionState";
+import {TransactionState} from "../package/types/enums/TransactionState";
 import {Transactions} from "../mocks/Database";
-import {TransactionReason} from "../enums/TransactionReason";
-import {ITransaction} from "../interfaces/ITransaction";
+import {TransactionReason} from "../package/types/enums/TransactionReason";
+import {ITransaction} from "../package/types/interfaces/ITransaction";
 
 export class Transaction implements ITransaction {
     id: number;
@@ -38,16 +38,16 @@ export class Transaction implements ITransaction {
     async create(params) {
         const transactionId = Transactions.length;
 
-        this.id = params.id,
-            this.time = params.time,
-            this.create_time = Date.now(),
-            this.perform_time = 0,
-            this.cancel_time = 0,
-            this.transaction = transactionId,
+        this.transaction = transactionId,
             this.order_id = params.account.order_id,
             this.state = TransactionState.waiting,
             this.reason = null,
-            this.receivers = []
+            this.receivers = [],
+            this.id = params.id,
+            this.time = params.time,
+            this.create_time = Date.now(),
+            this.perform_time = 0,
+            this.cancel_time = 0
 
         Transactions.push(this);
 

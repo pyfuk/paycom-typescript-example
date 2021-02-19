@@ -1,5 +1,5 @@
-import {Billing} from "./billing";
-import {IAccount} from "./interfaces/IAccount";
+import {Billing} from "./package/billing";
+import {IAccount} from "./package/types/interfaces/IAccount";
 import {Order} from "./models/Order";
 
 export class OrderCreator extends Billing{
