@@ -1,38 +1,38 @@
-import {OrderCreator} from "./OrderCreator";
-import {Transaction} from "./models/Transaction";
 import {prepareResponse} from "./utils/prepareResponse";
 import {MainError} from "./errors/MainErrors";
 import {RequestBodyRPC} from "./interfaces/RequestBodyRPC";
 import {CancelTransaction} from "./interfaces/CancelTransaction";
+import {Billing} from "./billing";
+import {ITransaction} from "./interfaces/ITransaction";
 
 
-export const routing = async (body: RequestBodyRPC<any>) => {
+export const routing = async (body: RequestBodyRPC<any>,accountCreator: Billing, transaction: ITransaction) => {
 
     try {
         let result;
         switch (body.method) {
             case 'CheckPerformTransaction':
-                result = await new OrderCreator().CheckPerformTransaction(body);
+                result = await accountCreator.CheckPerformTransaction(body)
                 break;
 
             case 'CreateTransaction':
-                result = await new OrderCreator().CreateTransaction(body, new Transaction());
+                result = await accountCreator.CreateTransaction(body, transaction);
                 break;
 
             case 'PerformTransaction':
-                result = await new OrderCreator().PerformTransaction(body, new Transaction());
+                result = await accountCreator.PerformTransaction(body, transaction);
                 break;
 
             case 'CancelTransaction':
-                result = await new OrderCreator().CancelTransaction(body, new Transaction());
+                result = await accountCreator.CancelTransaction(body, transaction);
                 break;
 
             case 'CheckTransaction':
-                result = await new OrderCreator().CheckTransaction(body, new Transaction());
+                result = await accountCreator.CheckTransaction(body, transaction);
                 break;
 
             case 'GetStatement':
-                result = await new OrderCreator().CheckTransaction(body, new Transaction());
+                result = await accountCreator.CheckTransaction(body, transaction);
                 break;
 
             default:
