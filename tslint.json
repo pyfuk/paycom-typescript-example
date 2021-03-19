@@ -3,7 +3,15 @@
     "extends": ["tslint:recommended"],
     "jsRules": {},
     "rules": {
-        "no-console": false
+        "no-console": false,
+        "object-literal-sort-keys": false,
+        "variable-name": [
+            "allow-leading-underscore"
+        ],
+        "no-shadowed-variable": [
+            true
+        ]
+
     },
     "rulesDirectory": []
 }

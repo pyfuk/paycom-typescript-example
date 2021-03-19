@@ -4,6 +4,6 @@ export enum TransactionReason {
     transactionFailed,
     transactionTimeOut,
     refund,
-    unknownError = 10
+    unknownError = 10,
 
 }

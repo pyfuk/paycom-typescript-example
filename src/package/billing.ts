@@ -1,45 +1,44 @@
-import {RequestBodyRPC} from "./types/interfaces/RequestBodyRPC";
 import {BillingError} from "./errors/BillingErrors";
-import {CreateTransactionParams} from "./types/interfaces/CreateTransactionParams";
-import {CheckPerformTransactionParams} from "./types/interfaces/CheckPerformTransactionParams";
-import {TransactionState} from "./types/enums/TransactionState";
-import {PerformTransactionParams} from "./types/interfaces/PerformTransactionParams";
 import {TransactionReason} from "./types/enums/TransactionReason";
-import {CancelTransaction} from "./types/interfaces/CancelTransaction";
-import {CheckTransactionParams} from "./types/interfaces/CheckTransactionParams";
-import {GetStatementParams} from "./types/interfaces/GetStatementParams";
+import {TransactionState} from "./types/enums/TransactionState";
 import {IAccount} from "./types/interfaces/IAccount";
+import {ICancelTransaction} from "./types/interfaces/ICancelTransaction";
+import {ICheckPerformTransactionParams} from "./types/interfaces/ICheckPerformTransactionParams";
+import {ICheckTransactionParams} from "./types/interfaces/ICheckTransactionParams";
+import {ICreateTransactionParams} from "./types/interfaces/ICreateTransactionParams";
+import {IGetStatementParams} from "./types/interfaces/IGetStatementParams";
+import {IPerformTransactionParams} from "./types/interfaces/IPerformTransactionParams";
+import {IRequestBodyRPC} from "./types/interfaces/IRequestBodyRPC";
 import {ITransaction} from "./types/interfaces/ITransaction";
-
 
 const TimeOutTime = 43200000;
 
 export abstract class Billing {
 
-    abstract createAccount(): IAccount;
+    public abstract createAccount(): IAccount;
 
-    async CheckPerformTransaction(body: RequestBodyRPC<CheckPerformTransactionParams>) {
+    public async CheckPerformTransaction(body: IRequestBodyRPC<ICheckPerformTransactionParams>) {
 
         const account = this.createAccount();
         await account.find(body.params);
         await account.validate(body.params);
 
         return {allow: true};
-    };
+    }
 
-    async CreateTransaction(body: RequestBodyRPC<CreateTransactionParams>, transaction: ITransaction) {
+    public async CreateTransaction(body: IRequestBodyRPC<ICreateTransactionParams>, transaction: ITransaction) {
 
         await transaction.find(body.params);
 
         if (!transaction.id) {
-            await this.CheckPerformTransaction(body)
+            await this.CheckPerformTransaction(body);
             await transaction.create(body.params);
 
             return {
                 create_time: transaction.getCreateTime(),
                 transaction: transaction.getId(),
-                state: transaction.state
-            }
+                state: transaction.state,
+            };
         }
 
         if (transaction.state !== TransactionState.waiting) {
@@ -54,11 +53,11 @@ export abstract class Billing {
         return {
             create_time: transaction.getCreateTime(),
             transaction: transaction.getId(),
-            state: transaction.state
-        }
-    };
+            state: transaction.state,
+        };
+    }
 
-    async PerformTransaction(body: RequestBodyRPC<PerformTransactionParams>, transaction: ITransaction) {
+    public async PerformTransaction(body: IRequestBodyRPC<IPerformTransactionParams>, transaction: ITransaction) {
 
         await transaction.find(body.params);
 
@@ -75,8 +74,8 @@ export abstract class Billing {
             return {
                 transaction: transaction.getId(),
                 perform_time: transaction.getPerformTime(),
-                state: transaction.state
-            }
+                state: transaction.state,
+            };
         }
 
         if (this.isExpired(transaction.time)) {
@@ -90,11 +89,11 @@ export abstract class Billing {
         return {
             transaction: transaction.getId(),
             perform_time: transaction.getPerformTime(),
-            state: transaction.state
-        }
+            state: transaction.state,
+        };
     }
 
-    async CancelTransaction(body: RequestBodyRPC<CancelTransaction>, transaction: ITransaction) {
+    public async CancelTransaction(body: IRequestBodyRPC<ICancelTransaction>, transaction: ITransaction) {
 
         await transaction.find(body.params);
 
@@ -107,16 +106,16 @@ export abstract class Billing {
             return {
                 transaction: transaction.getId(),
                 cancel_time: transaction.getCancelTime(),
-                state: transaction.state
-            }
+                state: transaction.state,
+            };
         }
 
         if (transaction.state !== TransactionState.payed) {
             return {
                 transaction: transaction.getId(),
                 cancel_time: transaction.getCancelTime(),
-                state: transaction.state
-            }
+                state: transaction.state,
+            };
         }
 
         const account = this.createAccount();
@@ -132,11 +131,11 @@ export abstract class Billing {
         return {
             transaction: transaction.getId(),
             cancel_time: transaction.getCancelTime(),
-            state: transaction.state
-        }
-    };
+            state: transaction.state,
+        };
+    }
 
-    async CheckTransaction(body: RequestBodyRPC<CheckTransactionParams>, transaction: ITransaction) {
+    public async CheckTransaction(body: IRequestBodyRPC<ICheckTransactionParams>, transaction: ITransaction) {
 
         await transaction.find(body.params);
 
@@ -150,18 +149,18 @@ export abstract class Billing {
             cancel_time: transaction.getCancelTime(),
             transaction: transaction.getId(),
             state: transaction.state,
-            reason: transaction.reason
-        }
+            reason: transaction.reason,
+        };
 
-    };
+    }
 
-    async GetStatement(body: RequestBodyRPC<GetStatementParams>, transaction: ITransaction) {
+    public async GetStatement(body: IRequestBodyRPC<IGetStatementParams>, transaction: ITransaction) {
         return {
-            transactions: await transaction.getTransactions(body.params)
-        }
+            transactions: await transaction.getTransactions(body.params),
+        };
     }
 
     private isExpired(time: number) {
-        return Date.now() > (time + TimeOutTime)
+        return Date.now() > (time + TimeOutTime);
     }
 }

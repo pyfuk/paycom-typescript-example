@@ -1,5 +1,5 @@
-import {TransactionState} from "../enums/TransactionState";
 import {TransactionReason} from "../enums/TransactionReason";
+import {TransactionState} from "../enums/TransactionState";
 
 export interface ITransaction {
     id: number;
@@ -23,5 +23,5 @@ export interface ITransaction {
 
     setPerformTime(time: number): void;
 
-    getTransactions(params): Promise<ITransaction[]>
+    getTransactions(params): Promise<ITransaction[]>;
 }

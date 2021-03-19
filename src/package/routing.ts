@@ -1,37 +1,35 @@
-import {prepareResponse} from "./utils/prepareResponse";
-import {MainError} from "./errors/MainErrors";
-import {RequestBodyRPC} from "./types/interfaces/RequestBodyRPC";
-import {CancelTransaction} from "./types/interfaces/CancelTransaction";
 import {Billing} from "./billing";
+import {MainError} from "./errors/MainErrors";
+import {IRequestBodyRPC} from "./types/interfaces/IRequestBodyRPC";
 import {ITransaction} from "./types/interfaces/ITransaction";
+import {prepareResponse} from "./utils/prepareResponse";
 
-
-export const routing = async (body: RequestBodyRPC<any>,accountCreator: Billing, transaction: ITransaction) => {
+export const routing = async (body: IRequestBodyRPC<any>, accountCreator: Billing, transaction: ITransaction) => {
 
     try {
         let result;
         switch (body.method) {
-            case 'CheckPerformTransaction':
-                result = await accountCreator.CheckPerformTransaction(body)
+            case "CheckPerformTransaction":
+                result = await accountCreator.CheckPerformTransaction(body);
                 break;
 
-            case 'CreateTransaction':
+            case "CreateTransaction":
                 result = await accountCreator.CreateTransaction(body, transaction);
                 break;
 
-            case 'PerformTransaction':
+            case "PerformTransaction":
                 result = await accountCreator.PerformTransaction(body, transaction);
                 break;
 
-            case 'CancelTransaction':
+            case "CancelTransaction":
                 result = await accountCreator.CancelTransaction(body, transaction);
                 break;
 
-            case 'CheckTransaction':
+            case "CheckTransaction":
                 result = await accountCreator.CheckTransaction(body, transaction);
                 break;
 
-            case 'GetStatement':
+            case "GetStatement":
                 result = await accountCreator.CheckTransaction(body, transaction);
                 break;
 
@@ -44,4 +42,4 @@ export const routing = async (body: RequestBodyRPC<any>,accountCreator: Billing,
     } catch (error) {
         return prepareResponse(body.id, error, null);
     }
-}
+};

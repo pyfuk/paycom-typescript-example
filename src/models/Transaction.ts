@@ -1,22 +1,22 @@
-import {TransactionState} from "../package/types/enums/TransactionState";
 import {Transactions} from "../mocks/Database";
 import {TransactionReason} from "../package/types/enums/TransactionReason";
+import {TransactionState} from "../package/types/enums/TransactionState";
 import {ITransaction} from "../package/types/interfaces/ITransaction";
 
 export class Transaction implements ITransaction {
-    id: number;
-    time: number;
-    state: TransactionState;
-    reason: TransactionReason;
-    create_time: number;
-    perform_time: number;
-    cancel_time: number;
-    transaction: number;
-    order_id: number
-    receivers: [];
+    public id: number;
+    public time: number;
+    public state: TransactionState;
+    public reason: TransactionReason;
+    public create_time: number;
+    public perform_time: number;
+    public cancel_time: number;
+    public transaction: number;
+    public order_id: number;
+    public receivers: [];
 
-    async find(params) {
-        const transaction = Transactions.find(transaction => transaction.id === params.id);
+    public async find(params) {
+        const transaction = Transactions.find((trans) => trans.id === params.id);
 
         if (!transaction) {
             return null;
@@ -35,7 +35,7 @@ export class Transaction implements ITransaction {
         return this;
     }
 
-    async create(params) {
+    public async create(params) {
         const transactionId = Transactions.length;
 
         this.transaction = transactionId,
@@ -47,48 +47,48 @@ export class Transaction implements ITransaction {
             this.time = params.time,
             this.create_time = Date.now(),
             this.perform_time = 0,
-            this.cancel_time = 0
+            this.cancel_time = 0;
 
         Transactions.push(this);
 
         return this;
     }
 
-    async cancel(state: TransactionState, reason: TransactionReason) {
+    public async cancel(state: TransactionState, reason: TransactionReason) {
         this.state = state;
         this.reason = reason;
         this.cancel_time = Date.now();
     }
 
-    async getTransactions(params) {
+    public async getTransactions(params) {
 
         return Transactions.map((transaction: Transaction) => {
                 if (transaction.state >= TransactionState.waiting &&
                     transaction.time >= params.from &&
                     transaction.time <= params.to) {
-                    return transaction
+                    return transaction;
                 }
-            }
-        )
+            },
+        );
     }
 
-    getCreateTime(): number {
+    public getCreateTime(): number {
         return this.create_time;
     }
 
-    getPerformTime(): number {
+    public getPerformTime(): number {
         return this.perform_time;
     }
 
-    setPerformTime(time: number) {
+    public setPerformTime(time: number) {
         this.perform_time = time;
     }
 
-    getCancelTime() {
+    public getCancelTime() {
         return this.cancel_time;
     }
 
-    getId(): number {
+    public getId(): number {
         return this.transaction;
     }
 }
